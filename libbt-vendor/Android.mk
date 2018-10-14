@@ -65,21 +65,24 @@ LOCAL_SHARED_LIBRARIES := \
         libcutils \
         liblog
 
+LOCAL_HEADER_LIBRARIES := \
+        libutils_headers
+
 LOCAL_MODULE := libbt-vendor
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_OWNER := qcom
 
-ifdef TARGET_2ND_ARCH
-LOCAL_MODULE_PATH_32 := $(TARGET_OUT_VENDOR)/lib
-LOCAL_MODULE_PATH_64 := $(TARGET_OUT_VENDOR)/lib64
-else
-LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_SHARED_LIBRARIES)
-endif
+LOCAL_VENDOR_MODULE := true
 
-ifneq ($(QCPATH),)
+ifeq ($(QCOM_BT_USE_BTNV),true)
 LOCAL_CFLAGS += -DBT_NV_SUPPORT
+ifeq ($(QCPATH),)
+LOCAL_SHARED_LIBRARIES += libdl
+LOCAL_CFLAGS += -DBT_NV_SUPPORT_DL
+else
 LOCAL_SHARED_LIBRARIES += libbtnv
+endif
 endif
 
 LOCAL_CFLAGS += -Wno-unused-variable
@@ -93,7 +96,9 @@ LOCAL_CFLAGS += -Wno-enum-conversion
 ifneq ($(BOARD_ANT_WIRELESS_DEVICE),)
 LOCAL_CFLAGS += -DENABLE_ANT
 endif
-#LOCAL_CFLAGS += -DREAD_BT_ADDR_FROM_PROP
+ifeq ($(QCOM_BT_READ_ADDR_FROM_PROP),true)
+LOCAL_CFLAGS += -DREAD_BT_ADDR_FROM_PROP
+endif
 
 #include $(LOCAL_PATH)/vnd_buildcfg.mk
 
